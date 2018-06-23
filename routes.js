@@ -30,7 +30,7 @@ var list2 = new Array() ;
 
 router.get('/pnb',function(req,res){
 	
-   var url = "mongodb://abhishek:abhishek@user1@ds263740.mlab.com:63740/db_bank" ;
+   var url = "mongodb://jimmy51997:iamlordvoldemort007@ds263740.mlab.com:63740/db_bank" ;
 	MongoClient.connect(url,function(err,db){
      if(err) throw err ;
       var dbo = db.db("bankdb") ;   
