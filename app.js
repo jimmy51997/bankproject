@@ -34,9 +34,9 @@ app.set('views','./src/views') ;
 app.set('view engine','ejs') ;
 
  
-var port = 8000 ;
-
-app.listen(process.env.PORT || 5000,function(err){
+var port = process.env.PORT || 8080 ;
+//process.env.PORT || 5000
+app.listen(port,function(err){
 	console.log(port) ;
 }) ;
 

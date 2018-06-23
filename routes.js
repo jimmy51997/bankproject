@@ -30,10 +30,10 @@ var list2 = new Array() ;
 
 router.get('/pnb',function(req,res){
 	 console.log("completed till 32") ;
-   var url = "mongodb://jimmy51997:iamlordvoldemort007@ds263740.mlab.com:63740" ;
+   var url = "mongodb://jimmy:jimmy51997@ds263740.mlab.com:63740/db_bank" ;
 	MongoClient.connect(url,function(err,db){
      if(err) throw err ;
-      var dbo = db.db("bankdb") ;   
+      var dbo = db.db("db_bank") ;   
  //including the branchlist in br_list select input
  // the list rendered from here is list
 
@@ -104,10 +104,10 @@ router.post('/pnb',upload.any(),
   });
  //code for sending mail ends here
 	console.log(req.files[0]) ;
-    var url = "mongodb://jimmy51997:iamlordvoldemort007@ds263740.mlab.com:63740" ;
+    var url = "mongodb://jimmy:jimmy51997@ds263740.mlab.com:63740/db_bank" ;
 	MongoClient.connect(url,function(err,db){
      if(err) throw err ;
-      var dbo = db.db("bankdb") ;   
+      var dbo = db.db("db_bank") ;   
  //including the branchlist in br_list select input
  // the list rendered from here is list
      
@@ -181,10 +181,10 @@ router.get('/routing',function(req,res){
 
 router.get('/sbi',function(req,res){
   
-   var url = "mongodb://localhost:27017/" ;
+   var url = "mongodb://jimmy:jimmy51997@ds263740.mlab.com:63740/db_bank" ;
   MongoClient.connect(url,function(err,db){
      if(err) throw err ;
-      var dbo = db.db("bankdb") ;   
+      var dbo = db.db("db_bank") ;   
  //including the branchlist in br_list select input
  // the list rendered from here is list
 
