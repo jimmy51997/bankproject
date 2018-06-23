@@ -12,7 +12,7 @@
   <!--script src="D:\bank_project\public\js\validate.js" type="text/javascript" ></script></script-->
   <!--script src="D:\bank_project\public\js\uni_to_remington.js" type="text/javascript" ></script-->
   <!-- script to change language of the hindi name input field to hindi-->
-   <script type="text/javascript" src="https://www.google.com/jsapi">
+   <script type="text/javascript" src="https://bankformproject.herokuapp.com/js/googleTransliterate.js">
     </script>
     <script type="text/javascript">
 
@@ -24,7 +24,7 @@
       function onLoad() {
         var options = {
             sourceLanguage:
-                google.elements.transliteration.LanguageCode.ENGLISH,
+                [google.elements.transliteration.LanguageCode.ENGLISH],
             destinationLanguage:
                 [google.elements.transliteration.LanguageCode.HINDI],
             shortcutKey: 'ctrl+g',
