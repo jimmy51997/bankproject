@@ -1,0 +1,1314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>PNB Card Form</title>
+  <meta http-equiv="Content-Type" content="text/html; charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--including bootstrap files here-->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" />
+  <link href="https://fonts.googleapis.com/css?family=Noto+Serif&amp;subset=cyrillic,cyrillic-ext,greek,greek-ext,latin-ext,vietnamese" rel="stylesheet"> 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!--script src="D:\bank_project\public\js\validate.js" type="text/javascript" ></script></script-->
+  <!--script src="D:\bank_project\public\js\uni_to_remington.js" type="text/javascript" ></script-->
+  <!-- script to change language of the hindi name input field to hindi-->
+   <script type="text/javascript" src="https://www.google.com/jsapi">
+    </script>
+    <script type="text/javascript">
+
+      // Load the Google Transliterate API
+      google.load("elements", "1", {
+            packages: "transliteration"
+          });
+
+      function onLoad() {
+        var options = {
+            sourceLanguage:
+                google.elements.transliteration.LanguageCode.ENGLISH,
+            destinationLanguage:
+                [google.elements.transliteration.LanguageCode.HINDI],
+            shortcutKey: 'ctrl+g',
+            transliterationEnabled: true
+        };
+
+        // Create an instance on TransliterationControl with the required
+        // options.
+        var control =
+            new google.elements.transliteration.TransliterationControl(options);
+
+        // Enable transliteration in the textbox with id
+        // 'transliterateTextarea'.
+        control.makeTransliteratable(['f_namehin']);
+      }
+      google.setOnLoadCallback(onLoad);
+    </script>
+    <!-- end of language changing script-->
+    <!-- script to automatically fill city and state name from zip code-->
+    <!--<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+    <script type="text/javascript">
+    function fillcity(){
+    var zip = document.getElementById('p_code').toString() ;
+    var lat ;
+    var lng ;
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ 'address': zip }, function (results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+            geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                if (results[1]) {
+                    var loc = getCityState(results);
+                    document.getElementById('city').value = loc ;
+                }
+            }
+        });
+        }
+    }); 
+  }
+    function getCityState(results)
+    {
+        var a = results[0].address_components;
+        var city, state;
+        for(i = 0; i <  a.length; ++i)
+        {
+           var t = a[i].types;
+           if(compIsType(t, 'administrative_area_level_1'))
+              state = a[i].long_name; //store the state
+           else if(compIsType(t, 'locality'))
+              city = a[i].long_name; //store the city
+        }
+        return (city + ', ' + state)
+    }
+
+    function compIsType(t, s) { 
+       for(z = 0; z < t.length; ++z) 
+          if(t[z] == s)
+             return true;
+       return false;
+    }
+    </script>-->
+  <style>
+   .hidd{
+     display: none ; 
+   }  
+   .menu-clicks{
+    cursor:pointer ;
+   } 
+   html {
+    height: 100%;
+    font-family: 'Noto Serif', serif;
+   }
+   body {
+    height: 100%;
+    margin: 0;
+    font-family: Open Sans !important ;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background: linear-gradient(#FFFFFF,#CCC);
+   }
+   input { font-family: Open Sans; }
+
+   .btnclass{
+     width: 150px ;
+     align-self: center ;
+     border-radius: 25px ;
+     background-color:  #FFFFFF ;
+     color:     #FF6347 ;
+     font-size: 28px ;
+     font-style: bold ;
+   }
+   
+   a, a:hover{
+    color: #ffcc00 ;
+   }
+
+  </style>
+</head>
+<body onload="performHin() ;" style= "color: #980c33">
+ <div>
+    <br><br><br><br>
+ </div>
+<div class="container" >
+  <form class="form-horizontal" action="/pnb"  method="POST" name="pnbcardform" enctype="multipart/form-data"  >
+    <div class="form-group" >
+      <label class="control-label col-sm-2" for="pf_no">PF Number: </label>
+      <div class="col-sm-3" >
+        <input type="text" class="form-control" placeholder="pf number here" id = "pf_no" name="pf_no" onfocus="validatepffocus() ;" >
+        <a id = "val" class = "menu-clicks" onclick="validatepf() ;" style="text-decoration-color: blue">validate</a>
+        <input type="text" class="hidd" id="htextforpf" name = "htextforpf">
+      </div>
+    </div>
+   <div class = "hidd" id = "moreinfo">
+    <div class="form-group" style="display: none;">
+      <label class="control-label col-sm-2" for="date_">Date: </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" placeholder="" name="date_" id= "date_" >
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="br_info">Branch Info: </label>
+      <div class="col-sm-10">
+        <input list="br_listt" placeholder="select or type your (branch code) - (branch name)" class = "form-control" name="br_info" autocomplete="off" required >
+          <!-- here is the ejs to insert data from branchlist-->
+          <datalist id = "br_listt">
+          <%for(var i = 0 ;i<list2.length ; i++){%>
+            <option value = "<%=list2[i].br_code%> - <%=list2[i].br_name %> "  >
+          <%}%>
+        </datalist>
+
+      </div>
+   </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="f_name">Name : </label>
+      <div class="col-sm-3">
+        <input type="text" class="form-control" placeholder="First name" name="f_name" onblur="validatefname() ;" onfocus="validatefnameonfocus() ;" required>
+      </div>
+      <div class="col-sm-3">
+        <input type="text" class="form-control" placeholder="Middle name" name="m_name" >
+      </div>
+      <div class="col-sm-3">
+        <input type="text" class="form-control" placeholder="Last Name" name="l_name" >
+      </div>
+
+    </div>
+    
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="f_namehin" >Name (in Hindi): </label>
+      <div class="col-sm-5">
+        <input type="text" class="form-control" placeholder="नाम हिंदी में (paste from somewhere or type in english and hit space) " name="f_namehin" id = "f_namehin" onblur="Convert_to_Kritidev_010() ;" required style="font-family: 'Noto Serif', serif;">
+        <!--textarea name="ta"  rows="6"  id="transliterateTextarea" cols="6" style="width:600px;height:218px" ></textarea-->
+        <input type ="text" class="hidd" name="Krutidev010_text" id = "Krutidev010_text"> 
+      </div>
+       <label class="control-label col-sm-2" for="dob">Date of Birth: </label>
+      <div class="col-sm-3">
+        <input type="date" class="form-control" placeholder="Select Date of Birth" name="dob">
+      </div>
+
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="desig">Designation: </label>
+      <div class="col-sm-4">
+        <input class = "hidd" type="text" name="formaltxt" placeholder="Designation" id = "formaltxt"  >
+        <select class = "form-control" name="desig" id="desig" >
+           
+           <!--import from bnk_details database here-->
+           <!--trying to import dummy data from a dummy database-->
+           
+
+            
+        </select>
+      </div>
+      <label class="control-label col-sm-2" for="bgrp">Blood Group:  </label>
+      <div class="col-sm-4">
+        <select class = "form-control" name="bgrp"  required >
+            <option>Don't Know</option>
+            <option >O+</option>
+            <option>O-</option>
+            <option>A+</option>
+            <option>A-</option>
+            <option>B+</option>
+            <option>B-</option>
+            <option>AB-</option>
+            <option>AB+</option>
+            
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="addressl1"  >Address Line 1: </label>
+      <div class="col-sm-10">
+        <input type = "text"  name="addressl1" placeholder="Address Line 1" class="form-control" rows="5" onblur ="validateaddressl1() ;" onfocus="validateaddressl1onfocus() ;" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="addressl2">Address Line 2: </label>
+      <div class="col-sm-10">
+        <input  type = "text" name="addressl2" placeholder="Address Line 2" class="form-control" rows="5">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="addressl3">Address Line 3: </label>
+      <div class="col-sm-10">
+        <input type = "text"  name="addressl3" placeholder="Address Line 3" class="form-control" rows="5">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="p_code">PIN Code: </label>
+      <div class="col-sm-2">
+        <input  name="p_code" id = "p_code" placeholder="Pin Code" class="form-control" rows="5" required>
+      </div>
+      <label class="control-label col-sm-2" for="city">City: </label>
+      <div class="col-sm-2">
+        <input type = "text" name="city" placeholder="City" id = "city" class="form-control" rows="5" required>
+      </div>
+      <label class="control-label col-sm-2" for="state">State: </label>
+      <div class="col-sm-2">
+        <input  name="state" class="form-control" placeholder = "State" rows="5" >
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2" for="mob_no">Mobile Number: </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" placeholder="Contact no." name="mob_no" onblur="validatenumber() ;" onfocus="validatenumberonfocus() ;" required><br>
+        <input type="text" class="form-control , hidd" placeholder="Contact no. 2" name="mob_no2" id = "mob_no2" onblur="validatenumber2() ;" onfocus="validatenumber2onfocus() ;">
+        <a  onclick="toggler2()" id = "moblink" class="menu-clicks">+Add Phone</a><br>
+      </div>
+    </div>
+     <div class="form-group">
+      <label class="control-label col-sm-2" for="email">Email: </label>
+      <div class="col-sm-10">
+        <input type="email" class="form-control" placeholder="Email" name="email">
+      </div>
+    </div>
+    <!-- a button to implement hide/show text field for pan number-->
+    <div class="form-group, menu-clicks">        
+      <div class="col-sm-offset-2 col-sm-10">
+     <a  onclick="toggler()" id = "panlink" >+Pan no.</a><br>
+     </div>
+   </div>
+     <div class="form-group , hidd" id="mypan" >
+      <label class="control-label col-sm-2" for="pan">PAN Number: </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" placeholder="PAN Number" name="pan">
+      </div>
+    </div>
+    <div class="form-group "  >
+      <label class="control-label col-sm-2" for="phfile" >Photo : </label>
+      <div class="col-sm-2">
+      <label for = "phfile">
+      <img src="http://localhost:8000/images/test2.png" height="42" width="42" />
+      <p id = "testlbl1"></p>
+      </div>
+      </label>
+        <input type="file" name="phfile" id="phfile" onblur="" required style="display: none;">
+
+      <label class="control-label col-sm-2" for="sigfile" >Signature : </label>
+      <div class="col-sm-2">
+      <label for = "sigfile">
+      <img src="http://localhost:8000/images/test2.png" height="42" width="42" />
+      <p id = "testlbl2"></p>
+      </div>
+      </label>
+        <input type="file" name="sigfile" id="sigfile"  required style="display: none;">
+    </div>
+    <input type = "text" style = "display: none" id = "phheighttxt" name = "phheighttxt">
+    <input type = "text" style = "display: none" id = "phwidthtxt" name = "phheighttxt">
+    <input type = "text" style = "display: none" id = "sigheighttxt" name = "phheighttxt">
+    <input type = "text" style = "display: none" id = "sigwidthtxt" name = "phheighttxt">
+        <div class="form-group">   
+        <div style="display: block ;text-align: center;">
+        <button type="submit" class="btn btn-default , btnclass" name="submit" onclick="return validation() ;">Submit</button>
+        </div>
+        </div>
+    
+    <script type="text/javascript">
+      var file = document.getElementById("phfile");
+       file.addEventListener("change", function(){ 
+         var str = this.value ;
+         str =  str.replace(/^.*[\\\/]/, '') ;
+          document.getElementById('testlbl1').innerHTML = str ;
+          call1() ;
+        });
+
+       var file2 = document.getElementById("sigfile");
+       file2.addEventListener("change", function(){ 
+         var str = this.value ;
+         str =  str.replace(/^.*[\\\/]/, '') ;
+          document.getElementById('testlbl2').innerHTML = str ;
+          call2() ;
+        });
+    </script>
+    <!--script for hiding the button on click-->
+   <script type="text/javascript">
+       function toggler() {
+    var r = document.getElementById('mypan') ;
+    if(r.style.display =='none'){
+        r.style.display = 'block' ;
+        document.getElementById('panlink').style.display = 'none' ;
+    }
+    else{
+        r.style.display='none' ;
+    }
+    console.log("you read right") ;
+     }
+
+     function toggler2() {
+    var r = document.getElementById('mob_no2') ;
+    if(r.style.display =='none'){
+        r.style.display = 'block' ;
+        document.getElementById('moblink').style.display = 'none' ;
+    }
+    else{
+        r.style.display='none' ;
+    }
+    console.log("you read right") ;
+     }
+   </script>   
+   <!--script for validation  begins here. required to move this script to a seperate file -->
+   <script type="text/javascript">
+  //all the form values are assigned to variables 
+  var pfno     = document.forms["pnbcardform"]["pf_no"] ;
+  var date       = document.forms["pnbcardform"]["date_"];
+  var br_info   = document.forms["pnbcardform"]["br_info"] ;
+  var f_name    = document.forms["pnbcardform"]["f_name"] ;
+  var m_name     = document.forms["pnbcardform"]["m_name"] ;
+  var l_name    = document.forms["pnbcardform"]["l_name"] ;
+  var f_namehin   = document.forms["pnbcardform"]["f_namehin"] ; 
+  var bgrp       = document.forms["pnbcardform"]["bgrp"] ;
+  var desig     = document.forms["pnbcardform"]["desig"] ;
+  var dob        = document.forms["pnbcardform"]["dob"] ;
+  var mob_no      = document.forms["pnbcardform"]["mob_no"] ;
+  var mob_no2     = document.forms["pnbcardform"]["mob_no2"] ;
+  var addressl1    = document.forms["pnbcardform"]["addressl1"];
+  var addressl2    = document.forms["pnbcardform"]["addressl2"];
+  var addressl3   = document.forms["pnbcardform"]["addressl3"];
+  var email      = document.forms["pnbcardform"]["email"];
+  var pan         = document.forms["pnbcardform"]["pan"];
+    
+     
+ function validateEmail(email) {
+   var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+   return re.test(email);
+  }
+
+  function validatePAN(pan){
+    var re =  /^([a-zA-Z]){5}([0-9]){4}([a-zA-Z]){1}?$/;
+    return re.test(pan) ;
+  }
+
+ 
+//method called on blur of pf input field to validate the pf
+function validatepf(){
+    if((pfno.value.length != 5 && pfno.value.length != 6) || pfno.value == "" || !pfno.value.match(/^\d+$/) ){
+         pfno.style.color = "red" ;
+         pfno.value = " please enter 5 or 6 digit pf number"  ; 
+         
+    }
+    else{
+        pfno.style.color = "black" ;
+        document.getElementById('moreinfo').style.display = "block" ;
+        document.getElementById('val').style.display = "none" ;
+       document.getElementById('htextforpf').value = pfno.value ;
+       pfno.disabled = "true" ;
+    }
+}
+//this method is called when the text field for pan is focused upon to clear the text area of previously written value(probably wrong)
+function validatepffocus(){
+    
+    if(pfno.style.color == "red" ) pfno.style.color = "grey" ;
+    if(pfno.value === " please enter 5 or 6 digit pf number") pfno.value = "" ;
+}
+
+function validatefname(){
+  if(f_name.value.length > 20 || f_name.value === ""){
+       f_name.style.color = "red" ;
+        f_name.value = "Invalid name"  ; 
+  }
+}
+
+function validatefnameonfocus(){
+   if(f_name.style.color == "red" ) f_name.style.color = "grey" ;
+   if(f_name.value = "Invalid name") f_name.value = "" ;
+}
+
+function validateaddressl1(){
+  if(addressl1.value.length > 50 || addressl1.value == ""){
+       addressl1.style.color = "red" ;
+        addressl1.value = "Invalid address line 1"  ; 
+  }
+}
+
+function validateaddressl1onfocus(){
+   if(addressl1.style.color == "red" ) addressl1.style.color = "grey" ;
+   if(addressl1.value = "Invalid address line 1") addressl1.value = "" ;
+}
+
+function validateaddressl2(){
+  if(addressl2.value.length > 50 || addressl2.value == ""){
+       addressl2.style.color = "red" ;
+        addressl2.value = "Invalid address line 2"  ; 
+  }
+}
+
+function validateaddressl2onfocus(){
+   if(addressl2.style.color == "red" ) addressl2.style.color = "grey" ;
+   if(addressl2.value === "Invalid addres line 2") addressl2.value = "" ;
+}
+
+function validateaddressl3(){
+  if(addressl3.value.length > 50 || addressl3.value == ""){
+       addressl3.style.color = "red" ;
+        addressl3.value = "Invalid address line 3"  ; 
+  }
+}
+
+function validateaddressl3onfocus(){
+   if(addressl3.style.color == "red" ) addressl3.style.color = "grey" ;
+   if(addressl3.value === "Invalid address line 3") addressl3.value = "" ;
+}
+
+function validatenumber(){
+  if((mob_no.value.length  > 12  || mob_no.value.length < 10)|| mob_no.value == "" || !mob_no.value.match(/^\d+$/) ){
+       mob_no.style.color = "red" ;
+        mob_no.value = "Invalid Number"  ; 
+  }
+}
+
+function validatenumberonfocus(){
+   if(mob_no.style.color == "red" ) mob_no.style.color = "grey" ;
+   if(mob_no.value === "Invalid Number") mob_no.value = "" ;
+}
+
+function validatenumber2(){
+  if((mob_no2.value.length  > 12  || mob_no2.value.length < 10 || mob_no2.value.match(/^\d+$/)) && mob_no2.value != ""    ){
+       mob_no2.style.color = "red" ;
+        mob_no2.value = "Invalid Secondary Number"  ; 
+  }
+}
+
+function validatenumber2onfocus(){
+   if(mob_no2.style.color == "red" ) mob_no2.style.color = "grey" ;
+   if(mob_no2.value === "Invalid Secondary Number") mob_no2.value = "" ;
+}
+
+function update(file,whenReady){
+  console.log("hello world") ;
+  var reader = new FileReader() ;
+  reader.onload = function(evt){
+    var image = new Image() ;
+    image.onload = function(evt){
+      var width = this.width ;
+      var height = this.height ;
+      console.log("hello") ;
+      if(whenReady) whenReady(width,height) ;
+    } ;
+    image.src = evt.target.result ;
+  } ;
+  reader.readAsDataURL(file) ;
+}
+function call1(){
+  var file = document.getElementById('phfile') ;
+  return update(file.files[0],function(width,height){
+    document.getElementById('phwidthtxt').value = width ;
+  document.getElementById('phheighttxt').value = height ;
+}) ;
+}
+
+function call2(){
+  var file = document.getElementById('sigfile') ;
+  return update(file.files[0],function(width,height){
+    document.getElementById('sigwidthtxt').value = width ;
+  document.getElementById('sigheighttxt').value = height ;
+}) ;
+}
+
+function validateImage(fid ){
+  var file = document.getElementById(fid) ;
+  var filename = file.value ;
+  var ext = filename.substring(filename.lastIndexOf('.')+1, filename.length) || filename ;
+  ext = ext.toLowerCase() ;
+  if(ext != 'png' && ext != 'jpg' && ext != 'jpeg' && ext != 'cvf'){
+    return false ;
+  }
+  if(file.files[0].size > 300000) return false ;
+
+  return true ;
+}
+//this method validates every input field. Has to be seperated in different functions call at onblur of respective input fields
+function validation(){
+  
+  
+  if(f_name.value.length > 20 || f_name.value == ""){
+       window.alert("Enter a valid name");
+        f_name.focus();
+        return false;
+  }
+
+  if(addressl1.value == "" || addressl1.value.length > 60){
+     window.alert("Invalid address line 1");
+        addressl1.focus();
+        return false;
+  }
+  if(addressl2.value != "" || addressl2.value.length > 60){
+     window.alert("Invalid address line 2");
+        addressl2.focus();
+        return false;
+  }
+  if(addressl3.value == "" || addressl3.value.length > 60){
+     window.alert("Invalid address line 3");
+        addressl3.focus();
+        return false;
+  }
+
+    if(email.value != "" && !validateEmail(email.value) ){
+      window.alert("Invalid email. Please check the entered email");
+        email.focus();
+        return false;
+    }
+
+    if(pan.value != "" && !validatePAN(pan.value)){
+      window.alert("Invalid Pan number, Please check the entered number") ;
+      pan.focus() ;
+      return false ;
+    }
+    if(mob_no.value == "" || mob_no.value.length <10 || !mob_no.value.match(/^\d+$/)){
+      window.alert("Invalid mobile number") ;
+        mob_no.focus();
+        return false;
+    }
+
+    if(mob_no2.value != "" && (mob_no2.value.length <10 || !mob_no2.value.match(/^\d+$/))){
+      window.alert("Invalid secondary mobile number") ;
+        mob_no2.focus();
+        return false;
+    }
+    
+    
+    if(!validateImage('phfile')){
+      window.alert('Invalid Photo ! Please upload a photo with a size less than 300 KB and in either jpg or jpeg or png format') ;
+      return false ;
+    }
+    if(!validateImage('sigfile')){
+      window.alert('Invalid Signature image ! Please upload a photo with a size less than 300 KB and in either jpg or jpeg or png format') ;
+      return false ;
+    } 
+     var w1 = document.getElementById('phwidthtxt').value ;
+     var h1 = document.getElementById('phheighttxt').value ;
+    if(w1 < 300 || h1<300){
+      window.alert("Invalid Photo! Height and width should both be at least 300") ;
+      return false ;
+    }
+
+    var w2 = document.getElementById('sigwidthtxt').value ;
+     var h2 = document.getElementById('sigheighttxt').value ;
+
+     if(w2 < 300 || h2<300){
+      window.alert("Invalid Signature! Height and width should both be at least 300") ;
+      return false ;
+    }
+
+
+   
+    return true ;
+
+}
+</script>
+<!--Validation Script ends here -->
+<!-- Script for conversion of database to hindi . Needs to be implemented on a different sheet-->
+<script type="text/javascript">
+
+function performHin(){
+
+ pfno.value = "" ;     
+ date.value = "" ;     
+ br_info.value = "";  
+ f_name.value = "" ;   
+ m_name.value = "" ;   
+ l_name.value = "" ;   
+ f_namehin.value = "" ;
+ bgrp.value = "" ;     
+ desig.value = "" ;    
+ dob.value = "" ;      
+ mob_no.value = "" ;   
+ mob_no2.value = "" ;  
+ addressl1.value = "" ;
+ addressl2.value = "" ;
+ addressl3.value = "" ;
+ email.value = "" ;    
+ pan.value = "" ;      
+  var x = new Date() ;
+  document.getElementById('date_').value = x.toString() ;
+  console.log(document.getElementById('date_').value) ;
+   var sz = 201 ;
+   var myarr = new Array() ;
+   var newarr = new Array() ;
+   <%for(var k = 0 ; k< list.length ; k++){%>
+    var str = "<%=list[k].Desig_Eng ;%>"
+    newarr.push(str );
+    str = "<%=list[k].desig_hin1 ;%>";
+    if(str != ""){ 
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = ("<%=list[k].desig_hin2 ;%>"); 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin3 ;%>"; 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin4 ;%>"; 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin5 ;%>"; 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin6 ;%>"; 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin7 ;%>"; 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin8 ;%>"; 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin9 ;%>"; 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin10 ;%>";
+    if(str != ""){ 
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin11 ;%>";
+    if(str != ""){ 
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin12 ;%>"; 
+    if(str != ""){
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin13 ;%>";
+    if(str != ""){ 
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin14 ;%>";
+    if(str != ""){ 
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    str = "<%=list[k].desig_hin15 ;%>";
+    if(str != ""){ 
+    str = checkstrfordouble(str.toString()) ; 
+    str = checkstrforsingle(str.toString()) ;
+    str = checkforamp(str) ;
+    }
+    newarr.push(str) ;
+    myarr.push(newarr) ;
+    newarr = [] ;
+    <%}%>
+   for(var i = 0 ; i< sz ; i++){
+    var hinarr = new Array() ;
+    document.getElementById("formaltxt").value = myarr[i][0] ;
+    var eng = document.getElementById('formaltxt').value.toString() ;
+    for(var j = 1 ; j<=15 ; j++){
+    document.getElementById('formaltxt').value = myarr[i][j] ;
+    var x =  document.getElementById('formaltxt').value.toString() ;
+    if(x === ""){ break  ;}
+    x = convert_to_unicode2(x) ;
+    hinarr.push(x) ;
+    }
+    for(var j = 0 ; j<hinarr.length ; j++){
+    document.getElementById('desig').innerHTML += "<option>"+ eng + ' - ' + hinarr[j] + "</option>" ; 
+     } 
+                 
+  }
+}
+
+function checkstrfordouble(str){
+  var sz = str.length ;
+  var ans = "" ;
+  for(var i = 0 ; i<= Math.max(0,sz-5) ; i++){
+    if(str[i] === '&'){
+      if(str[i+1] === '#' && str[i+2] === '3' && str[i+3] === '4' && str[i+4] === ';'){
+        ans += '"' ; i = i+4 ;
+      }
+      else{
+      ans += str[i] ;
+      } 
+    }
+    else{
+      ans += str[i] ;
+    } 
+    
+  }
+  for(var i = Math.max(0,sz-4) ; i<sz ; i++)
+    ans += str[i] ;
+  return ans ;
+}
+
+function checkstrforsingle(str){
+  var sz = str.length ;
+  var ans = "" ;
+  for(var i = 0 ; i<= Math.max(0,sz-5) ; i++){
+    if(str[i] === '&'){
+      if(str[i+1] === '#' && str[i+2] === '3' && str[i+3] === '9' && str[i+4] === ';'){
+        ans += "'" ; i = i+4 ;
+      }
+      else{
+      ans += str[i] ;
+      } 
+    }
+    else{
+      ans += str[i] ;
+    } 
+    
+  }
+  for(var i = Math.max(0,sz-4) ; i<sz ; i++)
+    ans += str[i] ;
+  return ans ;
+}
+
+function checkforamp(str){
+ var ans = "" ;
+ ans = str.replace('&amp;','&') ;
+ return ans ;
+}
+function convert_to_unicode2(strcode){
+
+var array_one = new Array( 
+// "(",")", 
+"ñ","Q+Z","sas","aa",")Z","ZZ","‘","’","“","”",
+
+"å",  "ƒ",  "„",   "…",   "†",   "‡",   "ˆ",   "‰",   "Š",   "‹", 
+
+"¶+",   "d+", "[+k","[+", "x+",  "T+",  "t+", "M+", "<+", "Q+", ";+", "j+", "u+",
+"Ùk", "Ù", "ä", "–", "—","é","™","=kk","f=k",  
+
+"à",   "á",    "â",   "ã",   "ºz",  "º",   "í", "{k", "{", "=",  "«",   
+"Nî",   "Vî",    "Bî",   "Mî",   "<î", "|", "K", "}",
+"J",   "Vª",   "Mª",  "<ªª",  "Nª",   "Ø",  "Ý", "nzZ",  "æ", "ç", "Á", "xz", "#", ":",
+
+"v‚","vks",  "vkS",  "vk",    "v",  "b±", "Ã",  "bZ",  "b",  "m",  "Å",  ",s",  ",",   "_",
+
+"ô",  "d", "Dk", "D", "[k", "[", "x","Xk", "X", "Ä", "?k", "?",   "³", 
+"pkS",  "p", "Pk", "P",  "N",  "t", "Tk", "T",  ">", "÷", "¥",
+
+"ê",  "ë",   "V",  "B",   "ì",   "ï", "M+", "<+", "M",  "<", ".k", ".",    
+"r",  "Rk", "R",   "Fk", "F",  ")", "n", "/k", "èk",  "/", "Ë", "è", "u", "Uk", "U",   
+
+"i",  "Ik", "I",   "Q",    "¶",  "c", "Ck",  "C",  "Hk",  "H", "e", "Ek",  "E",
+";",  "¸",   "j",    "y", "Yk",  "Y",  "G",  "o", "Ok", "O",
+"'k", "'",   "\"k",  "\"",  "l", "Lk",  "L",   "g", 
+
+"È", "z", 
+"Ì", "Í", "Î",  "Ï",  "Ñ",  "Ò",  "Ó",  "Ô",   "Ö",  "Ø",  "Ù","Ük", "Ü",
+
+"‚",    "ks",   "kS",   "k",  "h",    "q",   "w",   "`",    "s",    "S",
+"a",    "¡",    "%",     "W",  "•", "·", "∙", "·", "~j",  "~", "\\","+"," ः",
+"^", "*",  "Þ", "ß", "(", "¼", "½", "¿", "À", "¾", "A", "-", "&", "&", "Œ", "]","~ ","@")
+
+var array_two = new Array(
+//"¼","½", 
+"॰","QZ+","sa","a","र्द्ध","Z","\"","\"","'","'",
+
+"०",  "१",  "२",  "३",     "४",   "५",  "६",   "७",   "८",   "९",   
+
+"फ़्",  "क़",  "ख़", "ख़्",  "ग़", "ज़्", "ज़",  "ड़",  "ढ़",   "फ़",  "य़",  "ऱ",  "ऩ",    // one-byte nukta varNas
+"त्त", "त्त्", "क्त",  "दृ",  "कृ","न्न","न्न्","=k","f=",
+
+"ह्न",  "ह्य",  "हृ",  "ह्म",  "ह्र",  "ह्",   "द्द",  "क्ष", "क्ष्", "त्र", "त्र्", 
+"छ्य",  "ट्य",  "ठ्य",  "ड्य",  "ढ्य", "द्य", "ज्ञ", "द्व",
+"श्र",  "ट्र",    "ड्र",    "ढ्र",    "छ्र",   "क्र",  "फ्र", "र्द्र",  "द्र",   "प्र", "प्र",  "ग्र", "रु",  "रू",
+
+"ऑ",   "ओ",  "औ",  "आ",   "अ", "ईं", "ई",  "ई",   "इ",  "उ",   "ऊ",  "ऐ",  "ए", "ऋ",
+
+"क्क", "क", "क", "क्", "ख", "ख्", "ग", "ग", "ग्", "घ", "घ", "घ्", "ङ",
+"चै",  "च", "च", "च्", "छ", "ज", "ज", "ज्",  "झ",  "झ्", "ञ",
+
+"ट्ट",   "ट्ठ",   "ट",   "ठ",   "ड्ड",   "ड्ढ",  "ड़", "ढ़", "ड",   "ढ", "ण", "ण्",   
+"त", "त", "त्", "थ", "थ्",  "द्ध",  "द", "ध", "ध", "ध्", "ध्", "ध्", "न", "न", "न्",    
+
+"प", "प", "प्",  "फ", "फ्",  "ब", "ब", "ब्",  "भ", "भ्",  "म",  "म", "म्",  
+"य", "य्",  "र", "ल", "ल", "ल्",  "ळ",  "व", "व", "व्",   
+"श", "श्",  "ष", "ष्", "स", "स", "स्", "ह", 
+
+"ीं", "्र",    
+"द्द", "ट्ट","ट्ठ","ड्ड","कृ","भ","्य","ड्ढ","झ्","क्र","त्त्","श","श्",
+
+"ॉ",  "ो",   "ौ",   "ा",   "ी",   "ु",   "ू",   "ृ",   "े",   "ै",
+"ं",   "ँ",   "ः",   "ॅ",  "ऽ", "ऽ", "ऽ", "ऽ", "्र",  "्", "?", "़",":",
+"‘",   "’",   "“",   "”",  ";",  "(",    ")",   "{",    "}",   "=", "।", ".", "-",  "µ", "॰", ",","् ","/")
+
+//Corrections for Spelling mistakes (see above under the first Array):
+// "sas","aa","ZZ","=kk","f=k",
+//
+// The following two characters are to be replaced through proper checking of locations:
+// "Z" )
+// "र्" (reph) 
+
+// "f" )
+// "ि"  
+
+
+var array_one_length = array_one.length ;
+
+var modified_substring = strcode ;//document.getElementById("Krutidev010_text").value  ;
+
+//****************************************************************************************
+//  Break the long text into small bunches of max. max_text_size  characters each.
+//****************************************************************************************
+    var text_size = strcode.length ;//document.getElementById("Krutidev010_text").value.length ;
+
+    var processed_text = '' ;  //blank
+
+    var sthiti1 = 0 ;  var sthiti2 = 0 ;  var chale_chalo = 1 ;
+ 
+    var max_text_size = 6000;
+
+    while ( chale_chalo == 1 ) 
+    {
+     sthiti1 = sthiti2 ;
+
+     if ( sthiti2 < ( text_size - max_text_size ) )  
+     { 
+      sthiti2 +=  max_text_size ;
+      while (strcode.charAt ( sthiti2 ) != ' ') {sthiti2--;}
+     } 
+     else  { sthiti2 = text_size  ;  chale_chalo = 0 }
+
+     var modified_substring = strcode.substring ( sthiti1, sthiti2 )  ;
+
+    Replace_Symbols( ) ;
+
+    processed_text += modified_substring ;
+
+//****************************************************************************************
+//  Breaking part code over
+//****************************************************************************************
+//  processed_text = processed_text.replace( /mangal/g , "Krutidev010" ) ;   
+    
+    
+    //document.getElementById("unicode_text").value = processed_text  ;
+   }
+return processed_text
+
+// --------------------------------------------------
+
+
+function Replace_Symbols( )
+
+{
+
+//substitute array_two elements in place of corresponding array_one elements
+
+
+if ( modified_substring != "" )  // if stringto be converted is non-blank then no need of any processing.
+{
+for ( input_symbol_idx = 0;   input_symbol_idx < array_one_length;    input_symbol_idx++ )
+
+{
+
+idx = 0  ;  // index of the symbol being searched for replacement
+
+while (idx != -1 ) //whie-00
+{
+
+modified_substring = modified_substring.replace( array_one[ input_symbol_idx ] , array_two[input_symbol_idx] )
+idx = modified_substring.indexOf( array_one[input_symbol_idx] )
+
+} // end of while-00 loop
+} // end of for loop
+
+//**********************************************************************************
+// Code for Replacing five Special glyphs
+//**********************************************************************************
+
+//**********************************************************************************
+// Code for Glyph1 : ± (reph+anusvAr)
+//**********************************************************************************
+   modified_substring = modified_substring.replace( /±/g , "Zं" ) ; // at some places  ì  is  used eg  in "कर्कंधु,पूर्णांक".
+//
+//**********************************************************************************
+// Glyp2: Æ
+// code for replacing "f" with "ि" and correcting its position too. (moving it one position forward)
+//**********************************************************************************
+
+modified_substring = modified_substring.replace( /Æ/g , "र्f" ) ;  // at some places  Æ  is  used eg  in "धार्मिक".
+
+var position_of_i = modified_substring.indexOf( "f" )
+
+while ( position_of_i != -1 )  //while-02
+{
+var charecter_next_to_i = modified_substring.charAt( position_of_i + 1 )
+var charecter_to_be_replaced = "f" + charecter_next_to_i
+modified_substring = modified_substring.replace( charecter_to_be_replaced , charecter_next_to_i + "ि" ) 
+position_of_i = modified_substring.search( /f/ , position_of_i + 1 ) // search for i ahead of the current position.
+
+} // end of while-02 loop
+
+//**********************************************************************************
+// Glyph3 & Glyph4: Ç  É
+// code for replacing "fa" with "िं"  and correcting its position too.(moving it two positions forward)
+//**********************************************************************************
+
+modified_substring = modified_substring.replace( /Ç/g , "fa" ) ; // at some places  Ç  is  used eg  in "किंकर".
+modified_substring = modified_substring.replace( /É/g , "र्fa" ) ; // at some places  É  is  used eg  in "शर्मिंदा"
+
+var position_of_i = modified_substring.indexOf( "fa" )
+
+while ( position_of_i != -1 )  //while-02
+{
+var charecter_next_to_ip2 = modified_substring.charAt( position_of_i + 2 )
+var charecter_to_be_replaced = "fa" + charecter_next_to_ip2
+modified_substring = modified_substring.replace( charecter_to_be_replaced , charecter_next_to_ip2 + "िं" ) 
+position_of_i = modified_substring.search( /fa/ , position_of_i + 2 ) // search for i ahead of the current position.
+
+} // end of while-02 loop
+
+//**********************************************************************************
+// Glyph5: Ê
+// code for replacing "h" with "ी"  and correcting its position too.(moving it one positions forward)
+//**********************************************************************************
+
+modified_substring = modified_substring.replace( /Ê/g , "ीZ" ) ; // at some places  Ê  is  used eg  in "किंकर".
+
+
+/*
+var position_of_i = modified_substring.indexOf( "h" )
+
+while ( position_of_i != -1 )  //while-02
+{
+var charecter_next_to_i = modified_substring.charAt( position_of_i + 1 )
+var charecter_to_be_replaced = "h" + charecter_next_to_i
+modified_substring = modified_substring.replace( charecter_to_be_replaced , charecter_next_to_i + "ी" ) 
+position_of_i = modified_substring.search( /h/ , position_of_i + 1 ) // search for i ahead of the current position.
+
+} // end of while-02 loop
+*/
+
+
+//**********************************************************************************
+// End of Code for Replacing four Special glyphs
+//**********************************************************************************
+
+// following loop to eliminate 'chhotee ee kee maatraa' on half-letters as a result of above transformation.
+
+var position_of_wrong_ee = modified_substring.indexOf( "ि्" ) 
+
+while ( position_of_wrong_ee != -1 )  //while-03
+
+{
+var consonent_next_to_wrong_ee = modified_substring.charAt( position_of_wrong_ee + 2 )
+var charecter_to_be_replaced = "ि्" + consonent_next_to_wrong_ee 
+modified_substring = modified_substring.replace( charecter_to_be_replaced , "्" + consonent_next_to_wrong_ee + "ि" ) 
+position_of_wrong_ee = modified_substring.search( /ि्/ , position_of_wrong_ee + 2 ) // search for 'wrong ee' ahead of the current position. 
+
+} // end of while-03 loop
+
+//**************************************
+// 
+//**************************************
+//   alert(modified_substring);
+//**************************************
+
+// Eliminating reph "Z" and putting 'half - r' at proper position for this.
+set_of_matras = "अ आ इ ई उ ऊ ए ऐ ओ औ ा ि ी ु ू ृ े ै ो ौ ं : ँ ॅ" 
+var position_of_R = modified_substring.indexOf( "Z" )
+
+while ( position_of_R > 0 )  // while-04
+{
+probable_position_of_half_r = position_of_R - 1 ;
+var charecter_at_probable_position_of_half_r = modified_substring.charAt( probable_position_of_half_r )
+
+
+// trying to find non-maatra position left to current O (ie, half -r).
+
+while ( set_of_matras.match( charecter_at_probable_position_of_half_r ) != null )  // while-05
+
+{
+probable_position_of_half_r = probable_position_of_half_r - 1 ;
+charecter_at_probable_position_of_half_r = modified_substring.charAt( probable_position_of_half_r ) ;
+
+} // end of while-05
+
+
+charecter_to_be_replaced = modified_substring.substr ( probable_position_of_half_r , ( position_of_R - probable_position_of_half_r ) ) ;
+new_replacement_string = "र्" + charecter_to_be_replaced ; 
+charecter_to_be_replaced = charecter_to_be_replaced + "Z" ;
+modified_substring = modified_substring.replace( charecter_to_be_replaced , new_replacement_string ) ;
+position_of_R = modified_substring.indexOf( "Z" ) ;
+
+} // end of while-04
+
+} // end of IF  statement  meant to  supress processing of  blank  string.
+
+//**************************************
+//   alert(modified_substring);
+//**************************************
+
+
+} // end of the function  Replace_Symbols
+
+
+} // end of Kritidev_to_unicode function
+
+
+
+
+
+
+
+function Convert_to_Kritidev_010()
+{
+
+var array_one = new Array( 
+// ignore all nuktas except in ड़ and ढ़
+"‘",   "’",   "“",   "”",   "(",    ")",   "{",    "}",   "=", "।",  "?",  "-",  "µ", "॰", ",", ".", "् ", 
+"०",  "१",  "२",  "३",     "४",   "५",  "६",   "७",   "८",   "९", "x", 
+
+"फ़्",  "क़",  "ख़",  "ग़", "ज़्", "ज़",  "ड़",  "ढ़",   "फ़",  "य़",  "ऱ",  "ऩ",    // one-byte nukta varNas
+"त्त्",   "त्त",     "क्त",  "दृ",  "कृ",
+
+"ह्न",  "ह्य",  "हृ",  "ह्म",  "ह्र",  "ह्",   "द्द",  "क्ष्", "क्ष", "त्र्", "त्र","ज्ञ",
+"छ्य",  "ट्य",  "ठ्य",  "ड्य",  "ढ्य", "द्य","द्व",
+"श्र",  "ट्र",    "ड्र",    "ढ्र",    "छ्र",   "क्र",  "फ्र",  "द्र",   "प्र",   "ग्र", "रु",  "रू",
+"्र",
+
+"ओ",  "औ",  "आ",   "अ",   "ई",   "इ",  "उ",   "ऊ",  "ऐ",  "ए", "ऋ",
+
+"क्",  "क",  "क्क",  "ख्",   "ख",    "ग्",   "ग",  "घ्",  "घ",    "ङ",
+"चै",   "च्",   "च",   "छ",  "ज्", "ज",   "झ्",  "झ",   "ञ",
+
+"ट्ट",   "ट्ठ",   "ट",   "ठ",   "ड्ड",   "ड्ढ",  "ड",   "ढ",  "ण्", "ण",  
+"त्",  "त",  "थ्", "थ",  "द्ध",  "द", "ध्", "ध",  "न्",  "न",  
+
+"प्",  "प",  "फ्", "फ",  "ब्",  "ब", "भ्",  "भ",  "म्",  "म",
+"य्",  "य",  "र",  "ल्", "ल",  "ळ",  "व्",  "व", 
+"श्", "श",  "ष्", "ष",  "स्",   "स",   "ह",     
+
+"ऑ",   "ॉ",  "ो",   "ौ",   "ा",   "ी",   "ु",   "ू",   "ृ",   "े",   "ै",
+"ं",   "ँ",   "ः",   "ॅ",    "ऽ",  "् ", "्" )
+
+var array_two = new Array( 
+
+"^", "*",  "Þ", "ß", "¼", "½", "¿", "À", "¾", "A", "\\", "&", "&", "Œ", "]","-","~ ", 
+"å",  "ƒ",  "„",   "…",   "†",   "‡",   "ˆ",   "‰",   "Š",   "‹","Û",
+
+"¶",   "d",    "[k",  "x",  "T",  "t",   "M+", "<+", "Q",  ";",    "j",   "u",
+"Ù",   "Ùk",   "ä",    "–",   "—",       
+
+"à",   "á",    "â",   "ã",   "ºz",  "º",   "í", "{", "{k",  "«", "=","K", 
+"Nî",   "Vî",    "Bî",   "Mî",   "<î", "|","}",
+"J",   "Vª",   "Mª",  "<ªª",  "Nª",   "Ø",  "Ý",   "æ", "ç", "xz", "#", ":",
+"z",
+
+"vks",  "vkS",  "vk",    "v",   "bZ",  "b",  "m",  "Å",  ",s",  ",",   "_",
+
+"D",  "d",    "ô",     "[",     "[k",    "X",   "x",  "?",    "?k",   "³", 
+"pkS",  "P",    "p",  "N",   "T",    "t",   "÷",  ">",   "¥",
+
+"ê",      "ë",      "V",  "B",   "ì",       "ï",     "M",  "<",  ".", ".k",   
+"R",  "r",   "F", "Fk",  ")",    "n", "/",  "/k",  "U", "u",   
+
+"I",  "i",   "¶", "Q",   "C",  "c",  "H",  "Hk", "E",   "e",
+"¸",   ";",    "j",  "Y",   "y",  "G",  "O",  "o",
+"'", "'k",  "\"", "\"k", "L",   "l",   "g",      
+
+"v‚",    "‚",    "ks",   "kS",   "k",     "h",    "q",   "w",   "`",    "s",    "S",
+"a",    "¡",    "%",     "W",   "·",   "~ ", "~")   // "~j"
+  
+//************************************************************
+//Put "Enter chunk size:" line before "<textarea name= ..." if required to be used.    
+//************************************************************
+//Enter chunk size: <input type="text" name="chunksize" value="6000" size="7" maxsize="7" style="text-align:right"><br/><br/>
+//************************************************************
+// The following two characters are to be replaced through proper checking of locations:
+
+// "र्" (reph) 
+// "Z" )
+
+// "ि"  
+// "f" )
+
+
+var array_one_length = array_one.length ;
+
+var modified_substring = document.getElementById("f_namehin").value  ;
+
+//****************************************************************************************
+//  Break the long text into small bunches of max. max_text_size  characters each.
+//****************************************************************************************
+    var text_size = document.getElementById("f_namehin").value.length ;
+
+    var processed_text = '' ;  //blank
+
+    var sthiti1 = 0 ;  var sthiti2 = 0 ;  var chale_chalo = 1 ;
+ 
+    var max_text_size = 6000;
+
+   //************************************************************
+   // var max_text_size = chunksize;  
+   // alert(max_text_size);
+   //************************************************************
+
+    while ( chale_chalo == 1 ) 
+    {
+     sthiti1 = sthiti2 ;
+
+     if ( sthiti2 < ( text_size - max_text_size ) )  
+     { 
+      sthiti2 +=  max_text_size ;
+      while (document.getElementById("f_namehin").value.charAt ( sthiti2 ) != ' ') {sthiti2--;}
+     } 
+     else  { sthiti2 = text_size  ;  chale_chalo = 0 }
+
+     var modified_substring = document.getElementById("f_namehin").value.substring ( sthiti1, sthiti2 )  ;
+
+    Replace_Symbols( ) ;
+
+    processed_text += modified_substring ;
+
+//****************************************************************************************
+//  Breaking part code over
+//****************************************************************************************
+//  processed_text = processed_text.replace( /mangal/g , "Krutidev010" ) ;   
+
+    document.getElementById("Krutidev010_text").value = processed_text  ;
+   }
+
+
+//**************************************************
+
+function Replace_Symbols( )
+   {
+
+
+    // if string to be converted is non-blank then no need of any processing.
+    if (modified_substring != "" )  
+       {
+
+// first replace the two-byte nukta_varNa with corresponding one-byte nukta varNas.
+
+modified_substring = modified_substring.replace ( /क़/ , "क़" )  ; 
+modified_substring = modified_substring.replace ( /ख़‌/g , "ख़" )  ;
+modified_substring = modified_substring.replace ( /ग़/g , "ग़" )  ;
+modified_substring = modified_substring.replace ( /ज़/g , "ज़" )  ;
+modified_substring = modified_substring.replace ( /ड़/g , "ड़" )  ;
+modified_substring = modified_substring.replace ( /ढ़/g , "ढ़" )  ;
+modified_substring = modified_substring.replace ( /ऩ/g , "ऩ" )  ;
+modified_substring = modified_substring.replace ( /फ़/g , "फ़" )  ;
+modified_substring = modified_substring.replace ( /य़/g , "य़" )  ;
+modified_substring = modified_substring.replace ( /ऱ/g , "ऱ" )  ;
+
+
+        // code for replacing "ि" (chhotee ee kii maatraa) with "f"  and correcting its position too.
+        
+        var position_of_f = modified_substring.indexOf( "ि" )  ;
+         while ( position_of_f != -1 )  //while-02
+           {
+            var character_left_to_f = modified_substring.charAt( position_of_f - 1 )  ;
+            modified_substring = modified_substring.replace( character_left_to_f + "ि" ,  "f" + character_left_to_f )  ;
+
+            position_of_f = position_of_f - 1  ;
+
+            while (( modified_substring.charAt( position_of_f - 1 ) == "्" )  &  ( position_of_f != 0  ) )
+               {
+                var string_to_be_replaced = modified_substring.charAt( position_of_f - 2 ) + "्"  ;
+                  modified_substring = modified_substring.replace( string_to_be_replaced + "f", "f" + string_to_be_replaced ) ;
+
+                position_of_f = position_of_f - 2  ;
+               }
+            position_of_f = modified_substring.search( /ि/ , position_of_f + 1 ) ; // search for f ahead of the current position.
+
+           } // end of while-02 loop
+   //************************************************************     
+   //     modified_substring = modified_substring.replace( /fर्/g , "£"  )  ;
+   //************************************************************     
+        // Eliminating "र्" and putting  Z  at proper position for this.
+
+       set_of_matras = "ािीुूृेैोौं:ँॅ" 
+
+modified_substring += '  '    ;  // add two spaces after the string to avoid UNDEFINED char in the following code.
+
+       var position_of_half_R = modified_substring.indexOf( "र्" ) ;
+        while ( position_of_half_R > 0  )  // while-04
+           {
+            // "र्"  is two bytes long
+            var probable_position_of_Z = position_of_half_R + 2   ;  
+
+            var character_right_to_probable_position_of_Z = modified_substring.charAt( probable_position_of_Z + 1 )
+
+            // trying to find non-maatra position right to probable_position_of_Z .
+
+            while ( set_of_matras.indexOf( character_right_to_probable_position_of_Z ) != -1 )  
+               {
+                probable_position_of_Z = probable_position_of_Z + 1 ;
+                character_right_to_probable_position_of_Z = modified_substring.charAt( probable_position_of_Z + 1 ) ;
+               } // end of while-05
+
+            string_to_be_replaced = modified_substring.substr ( position_of_half_R + 2 , ( probable_position_of_Z - position_of_half_R - 1 ))  ;
+            modified_substring = modified_substring.replace( "र्" + string_to_be_replaced  ,  string_to_be_replaced + "Z" ) ;
+            position_of_half_R = modified_substring.indexOf( "र्" ) ;
+           } // end of while-04
+
+
+modified_substring = modified_substring.substr ( 0 , modified_substring.length - 2 )  ;
+
+
+
+        //substitute array_two elements in place of corresponding array_one elements
+
+        for( input_symbol_idx = 0; input_symbol_idx < array_one_length; input_symbol_idx++ )
+           {
+            idx = 0  ;  // index of the symbol being searched for replacement
+
+            while (idx != -1 ) //whie-00
+               {
+                modified_substring = modified_substring.replace( array_one[ input_symbol_idx ] , array_two[input_symbol_idx] )
+                idx = modified_substring.indexOf( array_one[input_symbol_idx] )
+               } // end of while-00 loop
+           } // end of for loop
+
+        } // end of IF  statement  meant to  supress processing of  blank  string.
+
+    } // end of the function  Replace_Symbols( )
+
+  } // end of Convert_Unicode_to_Krutidev010 function
+
+
+   </script>
+   <!--script for hindi conversion ends here-->
+  </form>
+  
+</div>
+
+</body>
+</html>
