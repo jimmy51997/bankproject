@@ -530,7 +530,7 @@ function validation(){
         addressl1.focus();
         return false;
   }
-  if(addressl2.value != "" || addressl2.value.length > 60){
+  if(addressl2.value == "" || addressl2.value.length > 60){
      window.alert("Invalid address line 2");
         addressl2.focus();
         return false;
