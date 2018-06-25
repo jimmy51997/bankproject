@@ -2,10 +2,12 @@ const express = require('express') ;
 const router = express.Router() ;
 const {check,validationResult} = require('express-validator/check') ;
 const { matchedData } = require('express-validator/filter') ;
+const aws = require('aws-sdk');
 var MongoClient = require('mongodb').MongoClient ;
 var multer = require('multer') ;
 var mkdirp = require('mkdirp') ;
 var nodemailer = require('nodemailer') ;
+
 var storage = multer.diskStorage({
 	destination: function(req,file,cb){
 		var dest1 = req.body.date_ ;
@@ -19,6 +21,10 @@ var storage = multer.diskStorage({
 	}
 }) ;
 var upload = multer({storage: storage}) ;
+
+
+aws.config.region = 'ap-south-1';
+const S3_BUCKET = process.env.S3_BUCKET;
 
 router.get('/', (req, res) => {
   console.log('hello world') ;
@@ -202,6 +208,34 @@ router.get('/sbi',function(req,res){
   }) ;
   //res.send("Hello world") ;
 }) ;
+
+// responsible for generating and returning the signature with which the client-side JavaScript can upload the image
+app.get('/sign-s3', (req, res) => {
+  const s3 = new aws.S3();
+  const fileName = req.query['file-name'];
+  const fileType = req.query['file-type'];
+  const s3Params = {
+    Bucket: S3_BUCKET,
+    Key: fileName,
+    Expires: 60,
+    ContentType: fileType,
+    ACL: 'public-read'
+  };
+
+  s3.getSignedUrl('putObject', s3Params, (err, data) => {
+    if(err){
+      console.log(err);
+      return res.end();
+    }
+    const returnData = {
+      signedRequest: data,
+      url: `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`
+    };
+    res.write(JSON.stringify(returnData));
+    res.end();
+  });
+});
+//till here
 
 
 module.exports = router ;
