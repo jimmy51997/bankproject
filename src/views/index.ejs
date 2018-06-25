@@ -45,49 +45,7 @@
       google.setOnLoadCallback(onLoad);
     </script>
     <!-- end of language changing script-->
-    <!-- script to automatically fill city and state name from zip code-->
-    <!--<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
-    <script type="text/javascript">
-    function fillcity(){
-    var zip = document.getElementById('p_code').toString() ;
-    var lat ;
-    var lng ;
-    var geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ 'address': zip }, function (results, status) {
-        if (status == google.maps.GeocoderStatus.OK) {
-            geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-                if (results[1]) {
-                    var loc = getCityState(results);
-                    document.getElementById('city').value = loc ;
-                }
-            }
-        });
-        }
-    }); 
-  }
-    function getCityState(results)
-    {
-        var a = results[0].address_components;
-        var city, state;
-        for(i = 0; i <  a.length; ++i)
-        {
-           var t = a[i].types;
-           if(compIsType(t, 'administrative_area_level_1'))
-              state = a[i].long_name; //store the state
-           else if(compIsType(t, 'locality'))
-              city = a[i].long_name; //store the city
-        }
-        return (city + ', ' + state)
-    }
-
-    function compIsType(t, s) { 
-       for(z = 0; z < t.length; ++z) 
-          if(t[z] == s)
-             return true;
-       return false;
-    }
-    </script>-->
+  
   <style>
    .hidd{
      display: none ; 
@@ -595,6 +553,57 @@ function validation(){
 }
 </script>
 <!--Validation Script ends here -->
+
+<!-- Script for file upload to aws-->
+<script type="text/javascript">
+  (() => {
+  document.getElementById("phfile").onchange = () => {
+    const files = document.getElementById('phfile').files;
+    const file = files[0];
+    if(file == null){
+      return alert('No file selected.');
+    }
+    getSignedRequest(file);
+  };
+})();
+
+
+function getSignedRequest(file){
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', `/sign-s3?file-name=${file.name}&file-type=${file.type}`);
+  xhr.onreadystatechange = () => {
+    if(xhr.readyState === 4){
+      if(xhr.status === 200){
+        const response = JSON.parse(xhr.responseText);
+        uploadFile(file, response.signedRequest, response.url);
+      }
+      else{
+        alert('Could not get signed URL.');
+      }
+    }
+  };
+  xhr.send();
+}
+
+ function uploadFile(file, signedRequest, url){
+  const xhr = new XMLHttpRequest();
+  xhr.open('PUT', signedRequest);
+  xhr.onreadystatechange = () => {
+    if(xhr.readyState === 4){
+      if(xhr.status === 200){
+        document.getElementById('preview').src = url;
+        document.getElementById('avatar-url').value = url;
+      }
+      else{
+        alert('Could not upload file.');
+      }
+    }
+  };
+  xhr.send(file);
+}
+
+</script>
+<!--file upload script to aws ends here-->
 <!-- Script for conversion of database to hindi . Needs to be implemented on a different sheet-->
 <script type="text/javascript">
 
