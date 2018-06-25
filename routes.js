@@ -210,7 +210,7 @@ router.get('/sbi',function(req,res){
 }) ;
 
 // responsible for generating and returning the signature with which the client-side JavaScript can upload the image
-app.get('/sign-s3', (req, res) => {
+router.get('/sign-s3', (req, res) => {
   const s3 = new aws.S3();
   const fileName = req.query['file-name'];
   const fileType = req.query['file-type'];
