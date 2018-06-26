@@ -23,8 +23,8 @@ var storage = multer.diskStorage({
 var upload = multer({storage: storage}) ;
 
 
-aws.config.region = 'ap-south-1';
-const S3_BUCKET = process.env.S3_BUCKET;
+//aws.config.region = 'ap-south-1';
+//const S3_BUCKET = process.env.S3_BUCKET;
 
 router.get('/', (req, res) => {
   console.log('hello world') ;
@@ -210,7 +210,8 @@ router.get('/sbi',function(req,res){
 }) ;
 
 // responsible for generating and returning the signature with which the client-side JavaScript can upload the image
-router.get('/sign-s3', (req, res) => {
+
+/*router.get('/sign-s3', (req, res) => {
   const s3 = new aws.S3();
   const fileName = req.query['file-name'];
   const fileType = req.query['file-type'];
@@ -236,6 +237,7 @@ router.get('/sign-s3', (req, res) => {
   });
 });
 //till here
+*/
 
 
 module.exports = router ;

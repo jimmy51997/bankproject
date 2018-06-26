@@ -62,6 +62,7 @@
     margin: 0;
     font-family: Open Sans !important ;
     background-repeat: no-repeat;
+    background-position: fixed ;
     background-attachment: fixed;
     background: linear-gradient(#FFFFFF,#CCC);
    }
@@ -419,7 +420,7 @@ function validatenumberonfocus(){
 }
 
 function validatenumber2(){
-  if((mob_no2.value.length  > 12  || mob_no2.value.length < 10 || mob_no2.value.match(/^\d+$/)) && mob_no2.value != ""    ){
+  if((mob_no2.value.length  > 12  || mob_no2.value.length < 10 || !mob_no2.value.match(/^\d+$/)) && mob_no2.value != ""    ){
        mob_no2.style.color = "red" ;
         mob_no2.value = "Invalid Secondary Number"  ; 
   }
@@ -556,7 +557,7 @@ function validation(){
 
 <!-- Script for file upload to aws-->
 <script type="text/javascript">
-  (() => {
+ /* (() => {
   document.getElementById("phfile").onchange = () => {
     const files = document.getElementById('phfile').files;
     const file = files[0];
@@ -601,7 +602,7 @@ function getSignedRequest(file){
   };
   xhr.send(file);
 }
-
+*/
 </script>
 <!--file upload script to aws ends here-->
 <!-- Script for conversion of database to hindi . Needs to be implemented on a different sheet-->
